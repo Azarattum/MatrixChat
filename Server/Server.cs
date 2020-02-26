@@ -20,7 +20,8 @@ namespace Server {
                 "list",
                 "clear",
                 "msg",
-                "time"
+                "time",
+                "leave"
             };
 
             Server.Disconnected += OnDisconnect;
@@ -38,6 +39,7 @@ namespace Server {
 
         private void OnDataRecieved(TcpClient sender, string data, byte flag) {
             if (data == null) return;
+            Console.WriteLine("[" + sender.Client.Handle + ":" + flag + "]-->" + data);
 
             //Connection head
             if (flag == 0) {
@@ -83,6 +85,7 @@ namespace Server {
                     results = Nicknames.Values.Where(x => x.ToLower().StartsWith(request))
                         .ToArray();
                 }
+                if (results.Length <= 0) return;
                 int index = interation % results.Length;
                 string response = (isCommand? "/": "") + results[index];
 
@@ -101,12 +104,18 @@ namespace Server {
                 case "msg":
                     string to = args[0].ToLower();
                     string message = String.Join(" ", args.TakeLast(args.Length - 1));
+                    string name = Nicknames.Values.FirstOrDefault(x => x.ToLower() == to);
+                    if (name == null) {
+                        Server.Send(client, "No such user!", 1);
+                        break;
+                    }
 
                     foreach (TcpClient user in Nicknames.Keys) {
                         byte flag = 3;
-                        string name = Nicknames[user];
                         string prefix = "[" + Nicknames[client] + "->" + name + "]: ";
-                        if (name.ToLower() == to) flag = 0;
+                        if (Nicknames[user] == name || user == client) {
+                            flag = 0;
+                        }
 
                         Server.Send(user, prefix + message, flag);
                     }
