@@ -13,6 +13,7 @@ namespace Client {
             Console.Write("Username: ");
             string username = Reader.Read();
             Console.Write("Address: ");
+            ///TEMP!
             string address = "localhost"; //Reader.Read();
             Console.WriteLine();
 
@@ -91,7 +92,6 @@ namespace Client {
         }
 
         static void OnTab(string word, int iteration) {
-            int temp = Console.CursorLeft;
             Client.Send(word + " " + iteration, 2);
         }
     }
