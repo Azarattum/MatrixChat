@@ -3,3 +3,4 @@ obj
 *.pdb
 *.runtimeconfig*.json
 *.deps.json
+.fuse_hidden*
