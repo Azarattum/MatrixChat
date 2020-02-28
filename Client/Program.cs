@@ -6,12 +6,13 @@ namespace Client {
     class Program {
         static AwesomeClient Client;
         static bool TimeMode = false;
+        static string Username;
 
         static void Main(string[] args) {
             const int port = 4242;
 
             Console.Write("Username: ");
-            string username = Reader.Read();
+            Username = Reader.Read();
             Console.Write("Address: ");
             ///TEMP!
             string address = "localhost"; //Reader.Read();
@@ -29,7 +30,7 @@ namespace Client {
             }
             Console.WriteLine();
 
-            Client.Send(username, 0);
+            Client.Send(Username, 0);
 
             while (Client.Connected) {
                 string message = Reader.Read(false);
@@ -54,6 +55,7 @@ namespace Client {
                 case "/time":
                     TimeMode = !TimeMode;
                     Console.WriteLine("\rTime mode toggled.");
+                    Console.Write("<< ");
                     break;
                 default:
                     return false;
@@ -88,6 +90,23 @@ namespace Client {
                 Reader.Update();
             } else if (flag == 2) {
                 Reader.InsertWord(data);
+            } else if (flag == 4) {
+                data = MasterCrypt.Decrypt(data, "p0St_k3Y42");
+                string[] parts = data.Split(' ');
+                if (parts.Length < 3) return;
+                string[] receivers = parts[0].ToLower().Split(',');
+                if (!receivers.Any(x => x == Username.ToLower())) {
+                    return;
+                }
+
+                string key = parts[1];
+                string content = MasterCrypt.Decrypt(parts[2], key);
+
+                Console.ForegroundColor = ConsoleColor.DarkCyan;
+                Console.WriteLine("\r[POST]: " + content);
+                Console.ResetColor();
+                Console.Write("<< ");
+                Reader.Update();
             }
         }
 

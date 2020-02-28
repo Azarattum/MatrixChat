@@ -20,6 +20,7 @@ namespace Server {
                 "list",
                 "clear",
                 "msg",
+                "post",
                 "time",
                 "leave"
             };
@@ -101,9 +102,11 @@ namespace Server {
                 case "help":
                     Server.Send(client, "Commands: " + string.Join(", ", Commands));
                     break;
+                case "ls":
                 case "list":
                     Server.Send(client, "Users online: " + string.Join(", ", Nicknames.Values));
                     break;
+                case "w":
                 case "msg":
                     string to = args[0].ToLower();
                     string message = String.Join(" ", args.TakeLast(args.Length - 1));
@@ -121,6 +124,31 @@ namespace Server {
                         }
 
                         Server.Send(user, prefix + message, flag);
+                    }
+                    break;
+                case "post":
+                    Random random = new Random();
+                    const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+                    string key = new string(Enumerable.Repeat(chars, 10)
+                        .Select(s => s[random.Next(s.Length)]).ToArray());
+
+                    if (args.Length == 0) {
+                        Server.Send(client, "Specify receivers (devided by ',')!", 1);
+                        break;
+                    }
+                    string[] receivers = args[0].ToLower().Split(',');
+                    string content = String.Join(" ", args.TakeLast(args.Length - 1));
+                    if (String.IsNullOrEmpty(content)) {
+                        Server.Send(client, "Specify content!", 1);
+                        break;
+                    }
+                    string data = MasterCrypt.Encrypt(
+                        string.Join(',', receivers) + " " + key + " " +
+                        MasterCrypt.Encrypt(content, key, true), "p0St_k3Y42", true
+                    );
+
+                    foreach (TcpClient user in Nicknames.Keys) {
+                        Server.Send(user, data, 4);
                     }
                     break;
                 default:
