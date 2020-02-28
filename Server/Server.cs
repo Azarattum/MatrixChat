@@ -135,7 +135,7 @@ namespace Server {
                 Server.Send(client, "Taken name!", 1);
                 return;
             }
-            if (!Regex.IsMatch(name, "[a-zA-Z0-9_-]+")) {
+            if (!Regex.IsMatch(name, "^[a-zA-Z0-9_-]+$")) {
                 Server.Send(client, "Invalid name!", 1);
                 return;
             }
