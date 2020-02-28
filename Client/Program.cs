@@ -11,21 +11,24 @@ namespace Client {
         static void Main(string[] args) {
             const int port = 4242;
 
-            Console.Write("Username: ");
+            Console.Write("Witcher Name: ");
             Username = Reader.Read();
-            Console.Write("Address: ");
-            ///TEMP!
-            string address = "localhost"; //Reader.Read();
+            Console.Write("Fortress Location: ");
+            string address = "localhost";
+            string input = Reader.Read();
+            if (!String.IsNullOrEmpty(input)) {
+                address = input;
+            }
             Console.WriteLine();
 
             Reader.TabPressed += OnTab;
             Client = new AwesomeClient(address, port);
             Client.GettedString += OnMessage;
 
-            Console.WriteLine("Connecting...");
+            Console.WriteLine("Entering your fortress...");
             if (!Client.Connect()) {
                 Console.ForegroundColor = ConsoleColor.DarkRed;
-                Console.WriteLine("Unable to connect to the server!");
+                Console.WriteLine("Dragons seem to be on your path!");
                 return;
             }
             Console.WriteLine();
@@ -40,7 +43,7 @@ namespace Client {
                 }
             }
 
-            Console.WriteLine("\n\rThe connection was closed!");
+            Console.WriteLine("\n\rMagic flash! And everything disappeared!");
         }
 
         static bool Evaluate(string message) {
@@ -54,7 +57,7 @@ namespace Client {
                     break;
                 case "/time":
                     TimeMode = !TimeMode;
-                    Console.WriteLine("\rTime mode toggled.");
+                    Console.WriteLine("\rTime magic toggled.");
                     Console.Write("<< ");
                     break;
                 default:

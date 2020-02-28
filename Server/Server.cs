@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Net;
 using System.Net.Sockets;
 using System.Text.RegularExpressions;
 
@@ -35,7 +34,7 @@ namespace Server {
 
         private void OnDisconnect(TcpClient client) {
             if (Nicknames.ContainsKey(client)) {
-                Server.Send(Nicknames[client] + " disconnected from the server!");
+                Server.Send(Nicknames[client] + " leaved the fortress!");
                 Nicknames.Remove(client);
             }
         }
@@ -100,11 +99,11 @@ namespace Server {
         private void Evaluate(TcpClient client, string command, string[] args) {
             switch (command) {
                 case "help":
-                    Server.Send(client, "Commands: " + string.Join(", ", Commands));
+                    Server.Send(client, "Signs: " + string.Join(", ", Commands));
                     break;
                 case "ls":
                 case "list":
-                    Server.Send(client, "Users online: " + string.Join(", ", Nicknames.Values));
+                    Server.Send(client, "Witchers in the room: " + string.Join(", ", Nicknames.Values));
                     break;
                 case "w":
                 case "msg":
@@ -112,7 +111,7 @@ namespace Server {
                     string message = String.Join(" ", args.TakeLast(args.Length - 1));
                     string name = Nicknames.Values.FirstOrDefault(x => x.ToLower() == to);
                     if (name == null) {
-                        Server.Send(client, "No such user!", 1);
+                        Server.Send(client, "No such witcher!", 1);
                         break;
                     }
 
@@ -152,7 +151,7 @@ namespace Server {
                     }
                     break;
                 default:
-                    Server.Send(client, "Command not found!", 1);
+                    Server.Send(client, "Sorry, you cannot cast that!", 1);
                     break;
             }
         }
@@ -180,7 +179,7 @@ namespace Server {
                 Server.Send(oldName + " changed his nickname to \"" + name + "\".");
             } else {
                 Nicknames.Add(client, name);
-                Server.Send(name + " connected to the server!");
+                Server.Send(name + " entered the fortress!");
             }
 
         }
