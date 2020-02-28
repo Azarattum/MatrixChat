@@ -33,8 +33,10 @@ namespace Server {
         }
 
         private void OnDisconnect(TcpClient client) {
-            Server.Send(Nicknames[client] + " disconnected from the server!");
-            Nicknames.Remove(client);
+            if (Nicknames.ContainsKey(client)) {
+                Server.Send(Nicknames[client] + " disconnected from the server!");
+                Nicknames.Remove(client);
+            }
         }
 
         private void OnDataRecieved(TcpClient sender, string data, byte flag) {
@@ -49,6 +51,7 @@ namespace Server {
             else if (flag == 1) {
                 if (!Nicknames.ContainsKey(sender)) {
                     Server.Send(sender, "Register first!", 1);
+                    Server.Kick(sender);
                     return;
                 }
 
@@ -129,14 +132,17 @@ namespace Server {
         private void Register(TcpClient client, string name) {
             if (String.IsNullOrEmpty(name)) {
                 Server.Send(client, "Empty name!", 1);
+                Server.Kick(client);
                 return;
             }
             if (Nicknames.Values.Any(x => x.ToLower() == name.ToLower())) {
                 Server.Send(client, "Taken name!", 1);
+                Server.Kick(client);
                 return;
             }
             if (!Regex.IsMatch(name, "^[a-zA-Z0-9_-]+$")) {
                 Server.Send(client, "Invalid name!", 1);
+                Server.Kick(client);
                 return;
             }
 

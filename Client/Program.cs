@@ -39,7 +39,7 @@ namespace Client {
                 }
             }
 
-            Console.WriteLine("The connection was closed!");
+            Console.WriteLine("\n\rThe connection was closed!");
         }
 
         static bool Evaluate(string message) {
