@@ -107,6 +107,10 @@ namespace Server {
                     break;
                 case "w":
                 case "msg":
+                    if (args.Length <= 0) {
+                        Server.Send(client, "You shouted into the void!", 1);
+                        break;
+                    }
                     string to = args[0].ToLower();
                     string message = String.Join(" ", args.TakeLast(args.Length - 1));
                     string name = Nicknames.Values.FirstOrDefault(x => x.ToLower() == to);
