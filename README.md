@@ -1,5 +1,5 @@
 # Witcher Chat
-Server-client witcher themed chat application for CTF challenge
+Server-client witcher themed chat application for CTF challenge.
 
 ## Features:
   - Join rooms
