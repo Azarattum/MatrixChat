@@ -12,6 +12,7 @@ namespace Server
             server.Start();
             Console.WriteLine("Server started!");
             Console.ReadKey();
+            server.Stop();
         }
     }
 }

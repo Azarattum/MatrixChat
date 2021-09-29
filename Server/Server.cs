@@ -5,6 +5,7 @@ using System.Text;
 using System.Linq;
 using System.Net.Sockets;
 using System.Text.RegularExpressions;
+using System.IO;
 
 namespace Server
 {
@@ -24,7 +25,8 @@ namespace Server
                 "clear",
                 "msg",
                 "time",
-                "leave"
+                "leave",
+                "memories"
             };
 
             byte[] key = Encoding.UTF8.GetBytes("M5NHKQHT");
@@ -38,10 +40,19 @@ namespace Server
             Server.Start();
         }
 
+        public void Stop()
+        {
+            Server.Send("The matrix is stopping...");
+            foreach (TcpClient client in Nicknames.Keys)
+                SaveMemory(client, null);
+            Server.Stop();
+        }
+
         private void OnDisconnect(TcpClient client)
         {
             if (Nicknames.ContainsKey(client))
             {
+                SaveMemory(client, null);
                 Server.Send(Nicknames[client] + " left the matrix!");
                 Nicknames.Remove(client);
             }
@@ -81,6 +92,7 @@ namespace Server
                 {
                     string prefix = "[" + Nicknames[sender] + "]: ";
                     Server.Send(prefix + data);
+                    SaveMemory(sender, data);
                 }
             }
             //Autocompletion request
@@ -149,6 +161,12 @@ namespace Server
                     if (reciever.Key != client)
                         Server.Send(reciever.Key, prefix + message);
                     break;
+                case "history":
+                case "memories":
+                    string memories = "  " + GetMemories(client).Replace("\n", "\n  ");
+                    memories = memories.TrimEnd(" \n\r".ToCharArray());
+                    Server.Send(client, "Things you remember:\n" + memories);
+                    break;
                 default:
                     Server.Send(client, "Sorry, there is no such pill!", 1);
                     break;
@@ -188,6 +206,32 @@ namespace Server
                 Server.Send(name + " entered the matrix!");
             }
 
+        }
+
+        private void SaveMemory(TcpClient client, string memory)
+        {
+            string name = Nicknames[client];
+            if (!Directory.Exists("memories"))
+                Directory.CreateDirectory("memories");
+
+            string path = String.Format("./memories/{0}", name);
+            if (memory == null)
+            {
+                File.Delete(path);
+                return;
+            }
+            using (StreamWriter writer = new StreamWriter(path, true))
+                writer.WriteLine(memory);
+        }
+
+        private string GetMemories(TcpClient client)
+        {
+            string name = Nicknames[client];
+            string path = String.Format("./memories/{0}", name);
+            if (!File.Exists(path)) return null;
+
+            using (StreamReader reader = new StreamReader(path, true))
+                return reader.ReadToEnd();
         }
     }
 }

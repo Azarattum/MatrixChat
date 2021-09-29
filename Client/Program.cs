@@ -104,7 +104,7 @@ namespace Client
                 }
 
                 string space = String.Concat(
-                    Enumerable.Repeat(" ", Console.BufferWidth - data.Length)
+                    Enumerable.Repeat(" ", Console.BufferWidth - data.Split('\n').Last().Length)
                 );
                 Console.Write("\r" + data + space);
                 Console.ResetColor();
