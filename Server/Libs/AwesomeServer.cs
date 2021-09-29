@@ -10,12 +10,12 @@ class AwesomeServer
 {
     //Events
     public delegate void ConnectionDelegate(TcpClient connectedClient); //Connection event
-    public event ConnectionDelegate Connected; 
+    public event ConnectionDelegate Connected;
     public event ConnectionDelegate Disconnected; //Disconnection event
     public delegate void BytesGetDelegate(TcpClient sender, byte[] data, byte flag); //Bytes get event
-    public event BytesGetDelegate GettedBytes;
+    public event BytesGetDelegate GotBytes;
     public delegate void StringGetDelegate(TcpClient sender, string data, byte flag); //String get event
-    public event StringGetDelegate GettedString;
+    public event StringGetDelegate GotString;
     public delegate void ExceptionCatchedDelegate(Exception exception); //Exception catched event
     public event ExceptionCatchedDelegate ExceptionCatched;
 
@@ -41,7 +41,7 @@ class AwesomeServer
     public AwesomeServer(int port)
     {
         //Initialize listener
-        Listener = new TcpListener(IPAddress.Any,port);
+        Listener = new TcpListener(IPAddress.Any, port);
         ReadingThreadsCount = Environment.ProcessorCount;
     }
 
@@ -60,8 +60,8 @@ class AwesomeServer
         if (Listener != null) //Stopping listener
             Listener.Stop();
         //Disconnect all clients
-        while(_Clients.Count > 0)
-        { 
+        while (_Clients.Count > 0)
+        {
             DisconnectClient(_Clients[0], true);
         }
         Fines.Clear();
@@ -134,7 +134,7 @@ class AwesomeServer
             Connected?.Invoke(client);
             //Start reading and checking threads
             if (_Clients.Count <= ReadingThreadsCount)
-                StartHandlers(_Clients.Count-1);
+                StartHandlers(_Clients.Count - 1);
             Thread.Sleep(5);
             //Keep listening
             if (IsRunning)
@@ -214,7 +214,7 @@ class AwesomeServer
     {
         do
         {
-            for (int i = threadNumber; i < _Clients.Count; i += threadsLength) 
+            for (int i = threadNumber; i < _Clients.Count; i += threadsLength)
             {
                 try
                 {
@@ -252,13 +252,13 @@ class AwesomeServer
                                 continue;
                             }
                             //Read data
-                            byte[] data = ReadBytes(clientReader,client, size, 500);
+                            byte[] data = ReadBytes(clientReader, client, size, 500);
 
                             //Invoke callbacks
-                            if (Decrypt != null && data != null && (GettedBytes != null || GettedString != null))
+                            if (Decrypt != null && data != null && (GotBytes != null || GotString != null))
                                 data = Decrypt(data, Key);
-                            GettedBytes?.Invoke(client, data, flag);
-                            GettedString?.Invoke(client, Encoding.UTF8.GetString(data), flag);
+                            GotBytes?.Invoke(client, data, flag);
+                            GotString?.Invoke(client, Encoding.UTF8.GetString(data), flag);
                         }
                         catch (IOException e) { ExceptionCatched?.Invoke(e); }
                         catch (OutOfMemoryException e)
@@ -274,7 +274,7 @@ class AwesomeServer
                     }
                 }
                 //For preventing thread-unsafe collections causing exceptions
-                catch (ArgumentOutOfRangeException e) { ExceptionCatched?.Invoke(e); } 
+                catch (ArgumentOutOfRangeException e) { ExceptionCatched?.Invoke(e); }
             }
             Thread.Sleep(1);
         } while (IsRunning && _Clients.Count > threadNumber);

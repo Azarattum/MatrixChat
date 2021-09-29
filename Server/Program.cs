@@ -1,9 +1,12 @@
 ﻿using System;
 using System.IO;
 
-namespace Server {
-    class Program {
-        static void Main(string[] args) {
+namespace Server
+{
+    class Program
+    {
+        static void Main(string[] args)
+        {
             const int port = 4242;
             ServerManager server = new ServerManager(port);
             server.Start();

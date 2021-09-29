@@ -8,9 +8,9 @@ class AwesomeClient
 {
     //Events
     public delegate void BytesGetDelegate(byte[] data, byte flag);
-    public event BytesGetDelegate GettedBytes;
+    public event BytesGetDelegate GotBytes;
     public delegate void StringGetDelegate(string data, byte flag);
-    public event StringGetDelegate GettedString;
+    public event StringGetDelegate GotString;
     public delegate void ServerClosedDelegate();
     public event ServerClosedDelegate ServerClosed;
     public delegate void ExceptionCatchedDelegate(Exception exception);
@@ -144,10 +144,10 @@ class AwesomeClient
                     byte[] data = ReadBytes(serverReader, Client, size, 500);
 
                     //Invoke callbacks
-                    if (Decrypt != null && data != null && (GettedBytes != null || GettedString != null))
+                    if (Decrypt != null && data != null && (GotBytes != null || GotString != null))
                         data = Decrypt(data, Key);
-                    GettedBytes?.Invoke(data, flag);
-                    GettedString?.Invoke(Encoding.UTF8.GetString(data), flag);
+                    GotBytes?.Invoke(data, flag);
+                    GotString?.Invoke(Encoding.UTF8.GetString(data), flag);
                 }
             }
             catch (IOException e) { ExceptionCatched?.Invoke(e); }
