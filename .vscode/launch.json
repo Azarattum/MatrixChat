@@ -1,0 +1,27 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "server: .NET Core Launch",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "server: build",
+            "program": "${workspaceFolder}/Server/bin/Debug/netcoreapp3.1/Server.dll",
+            "args": [],
+            "cwd": "${workspaceFolder}/Server",
+            "console": "integratedTerminal",
+            "stopAtEntry": false
+        },
+        {
+            "name": "client: .NET Core Launch",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "client: build",
+            "program": "${workspaceFolder}/Client/bin/Debug/netcoreapp3.1/Client.dll",
+            "args": [],
+            "cwd": "${workspaceFolder}/Client",
+            "console": "integratedTerminal",
+            "stopAtEntry": false
+        }
+    ]
+}
