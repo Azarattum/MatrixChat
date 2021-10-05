@@ -57,7 +57,7 @@ namespace Client
                         ConsoleLeft = Console.CursorLeft;
                         RenderText(Line);
                         InputIndex = Line.Length;
-                        Console.CursorLeft = Line.Length + StartLeft;
+                        SetCursorLeft(Line.Length + StartLeft);
                         ConsoleLeft = Console.CursorLeft;
                     }
                 }
@@ -70,6 +70,7 @@ namespace Client
                         ConsoleLeft = Console.CursorLeft;
                         RenderText(Line);
                         InputIndex = Line.Length;
+                        SetCursorLeft(Line.Length + StartLeft);
                         Console.CursorLeft = Line.Length + StartLeft;
                         // ConsoleLeft = Line.Length + StartLeft;
                     }
@@ -179,17 +180,26 @@ namespace Client
             }
         }
 
+        static void SetCursorLeft(int value)
+        {
+            try
+            {
+                Console.CursorLeft = value;
+            }
+            catch { }
+        }
+
         static int RenderText(string text)
         {
             int left = ConsoleLeft - InputIndex;
             if (left < 0)
             {
-                Console.CursorLeft = 0;
+                SetCursorLeft(0);
                 ConsoleLeft = 0;
             }
             else
             {
-                Console.CursorLeft = left;
+                SetCursorLeft(left);
                 ConsoleLeft = left;
             }
 
@@ -202,7 +212,8 @@ namespace Client
             int trueLeft = left;
             if (left < 0)
                 left = 0;
-            Console.CursorLeft = left;
+
+            SetCursorLeft(left);
             ConsoleLeft = left;
             Input = text;
             return trueLeft;
