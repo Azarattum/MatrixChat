@@ -48,12 +48,18 @@ namespace Server
             Server.Stop();
         }
 
+        private string GetDisplayName(TcpClient client)
+        {
+            if (client == null) return "";
+            return Regex.Replace(Nicknames[client], "[./]", "");
+        }
+
         private void OnDisconnect(TcpClient client)
         {
             if (Nicknames.ContainsKey(client))
             {
                 SaveMemory(client, null);
-                Server.Send(Nicknames[client] + " left the matrix!");
+                Server.Send(GetDisplayName(client) + " left the matrix!");
                 Nicknames.Remove(client);
             }
         }
@@ -90,7 +96,7 @@ namespace Server
                 //Treat as message
                 else
                 {
-                    string prefix = "[" + Nicknames[sender] + "]: ";
+                    string prefix = "[" + GetDisplayName(sender) + "]: ";
                     Server.Send(prefix + data);
                     SaveMemory(sender, data);
                 }
@@ -116,8 +122,10 @@ namespace Server
                 }
                 else
                 {
-                    results = Nicknames.Values.Where(x => x.ToLower().StartsWith(request))
-                        .ToArray();
+                    results = Nicknames.Keys.Where(
+                            x => GetDisplayName(x).ToLower().StartsWith(request)
+                        )
+                        .Select(x => GetDisplayName(x)).ToArray();
                 }
                 if (results.Length <= 0) return;
                 int index = interation % results.Length;
@@ -136,7 +144,7 @@ namespace Server
                     break;
                 case "ls":
                 case "list":
-                    Server.Send(client, "People in the matrix: " + string.Join(", ", Nicknames.Values));
+                    Server.Send(client, "People in the matrix: " + string.Join(", ", Nicknames.Keys.Select(x => GetDisplayName(x))));
                     break;
                 case "w":
                 case "msg":
@@ -148,7 +156,7 @@ namespace Server
                     string to = args[0].ToLower();
                     string message = String.Join(" ", args.TakeLast(args.Length - 1));
                     KeyValuePair<TcpClient, string> reciever = Nicknames
-                        .FirstOrDefault(x => x.Value.ToLower() == to);
+                        .FirstOrDefault(x => GetDisplayName(x.Key).ToLower() == to);
 
                     if (reciever.Equals(default))
                     {
@@ -156,7 +164,7 @@ namespace Server
                         break;
                     }
 
-                    string prefix = "[" + Nicknames[client] + "->" + reciever.Value + "]: ";
+                    string prefix = "[" + GetDisplayName(client) + "->" + GetDisplayName(reciever.Key) + "]: ";
                     Server.Send(client, prefix + message);
                     if (reciever.Key != client)
                         Server.Send(reciever.Key, prefix + message);
@@ -181,13 +189,16 @@ namespace Server
                 Server.Kick(client);
                 return;
             }
-            if (Nicknames.Values.Any(x => x.ToLower() == name.ToLower()))
+            if (Nicknames.Any(x =>
+                x.Value.ToLower() == name.ToLower() ||
+                GetDisplayName(x.Key).ToLower() == Regex.Replace(name, "[./]", "").ToLower())
+            )
             {
-                Server.Send(client, "Taken name!", 1);
+                Server.Send(client, "That name is taken!", 1);
                 Server.Kick(client);
                 return;
             }
-            if (!Regex.IsMatch(name, "^[a-zA-Z0-9_-]+$"))
+            if (!Regex.IsMatch(name, "^[a-zA-Z0-9_./-]+$"))
             {
                 Server.Send(client, "Invalid name!", 1);
                 Server.Kick(client);
@@ -196,32 +207,36 @@ namespace Server
 
             if (Nicknames.ContainsKey(client))
             {
-                string oldName = Nicknames[client];
+                string oldName = GetDisplayName(client);
                 Nicknames[client] = name;
-                Server.Send(oldName + " changed his nickname to \"" + name + "\".");
+                Server.Send(oldName + " changed his nickname to \"" + GetDisplayName(client) + "\".");
             }
             else
             {
+                name = Regex.Replace(name, "\\.\\./|/\\.\\.|/[a-zA-Z_-]+|^/|/$", "");
                 Nicknames.Add(client, name);
-                Server.Send(name + " entered the matrix!");
+                Server.Send(GetDisplayName(client) + " entered the matrix!");
             }
 
         }
 
         private void SaveMemory(TcpClient client, string memory)
         {
-            string name = Nicknames[client];
             if (!Directory.Exists("memories"))
                 Directory.CreateDirectory("memories");
 
-            string path = String.Format("./memories/{0}", name);
-            if (memory == null)
+            string path = String.Format("./memories/{0}", GetDisplayName(client));
+            try
             {
-                File.Delete(path);
-                return;
+                if (memory == null)
+                {
+                    File.Delete(path);
+                    return;
+                }
+                using (StreamWriter writer = new StreamWriter(path, true))
+                    writer.WriteLine(memory);
             }
-            using (StreamWriter writer = new StreamWriter(path, true))
-                writer.WriteLine(memory);
+            catch { }
         }
 
         private string GetMemories(TcpClient client)
